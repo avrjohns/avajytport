@@ -1,0 +1,3225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Scrap Mechanic World Manager — Code</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root{
+    --bg:        #0d1117;
+    --bg-elev:   #161b22;
+    --border:    #30363d;
+    --text:      #e6edf3;
+    --text-dim:  #8b949e;
+    --link:      #58a6ff;
+    --amber:     #d29922;
+    --amber-bg:  rgba(210,153,34,0.1);
+  }
+
+  html, body { height: 100%; }
+  body{
+    background: var(--bg); color: var(--text);
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 14px; line-height: 1.5;
+  }
+  a { color: var(--link); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  button { font-family: inherit; border: none; background: none; color: inherit; cursor: pointer; }
+
+  header{
+    padding: 20px 24px; border-bottom: 1px solid var(--border);
+  }
+  .back-link{ font-size: 13px; color: var(--text-dim); display:inline-flex; align-items:center; gap:6px; margin-bottom: 14px; }
+  .back-link:hover{ color: var(--text); text-decoration:none; }
+  .title-row{ display:flex; align-items:center; gap: 12px; flex-wrap: wrap; }
+  h1{ font-size: 22px; font-weight: 600; }
+  .private-pill{
+    display:inline-flex; align-items:center; gap:6px;
+    font-size: 11.5px; font-weight: 600; color: var(--amber);
+    background: var(--amber-bg); border: 1px solid rgba(210,153,34,0.4);
+    padding: 3px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .subtitle{ color: var(--text-dim); font-size: 13.5px; margin-top: 6px; }
+  .stack-chips{ display:flex; gap:8px; margin-top: 12px; flex-wrap: wrap; }
+  .stack-chip{
+    font-size: 12px; color: var(--text-dim); background: var(--bg-elev);
+    border: 1px solid var(--border); padding: 3px 10px; border-radius: 6px;
+  }
+
+  .notice{
+    margin: 18px 24px 0; padding: 12px 16px; background: var(--amber-bg);
+    border: 1px solid rgba(210,153,34,0.35); border-radius: 8px;
+    font-size: 13px; color: var(--text); line-height: 1.6;
+  }
+  .notice strong{ color: var(--amber); }
+  .notice ul{ margin: 8px 0 0 18px; color: var(--text-dim); }
+
+  main{ display:flex; border-top: 1px solid var(--border); margin-top: 18px; min-height: 60vh; }
+
+  .sidebar{ width: 260px; flex-shrink: 0; border-right: 1px solid var(--border); padding: 14px 0; }
+  .tree-folder-label{
+    padding: 10px 16px 6px; font-size: 11.5px; color: var(--text-dim);
+    text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600;
+  }
+  .tree-file{
+    display:block; width: 100%; text-align: left; padding: 6px 16px 6px 32px;
+    font-size: 13px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    color: var(--text); border-radius: 6px;
+  }
+  .tree-file.nested{ padding-left: 44px; }
+  .tree-file:hover{ background: var(--bg-elev); }
+  .tree-file.active{ background: rgba(88,166,255,0.15); color: var(--link); }
+
+  .code-area{ flex: 1; min-width: 0; display:flex; flex-direction: column; }
+  .breadcrumb{
+    padding: 10px 20px; border-bottom: 1px solid var(--border);
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 13px; color: var(--text-dim);
+  }
+  .breadcrumb span{ color: var(--text); }
+
+  .code-scroll{ flex: 1; overflow: auto; }
+  .code-wrap{ display:flex; min-width: max-content; }
+  .line-numbers{
+    text-align: right; padding: 16px 12px 16px 16px; color: #484f58;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12.5px; line-height: 1.6; white-space: pre; user-select: none;
+    border-right: 1px solid var(--border);
+  }
+  pre.code-pre{ margin: 0; padding: 16px 20px; flex: 1; }
+  pre.code-pre code.hljs{
+    background: transparent !important; padding: 0 !important;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12.5px; line-height: 1.6; white-space: pre;
+  }
+
+  footer{ padding: 16px 24px; color: var(--text-dim); font-size: 12px; border-top: 1px solid var(--border); }
+
+  @media (max-width: 720px){
+    main{ flex-direction: column; }
+    .sidebar{ width: 100%; border-right:none; border-bottom:1px solid var(--border); }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="back-link" href="../../index.html">&larr; Back to portfolio</a>
+  <div class="title-row">
+    <h1>Scrap Mechanic World Manager</h1>
+    <span class="private-pill">Private repository</span>
+  </div>
+  <div class="subtitle">Built with my cousin Clayton Heath &middot; MAAC2 / ScrapMechanicWorldManager1</div>
+  <div class="stack-chips">
+    <span class="stack-chip">C++</span>
+    <span class="stack-chip">libcurl</span>
+    <span class="stack-chip">nlohmann/json</span>
+    <span class="stack-chip">Cloudflare Workers</span>
+    <span class="stack-chip">TypeScript</span>
+    <span class="stack-chip">Durable Objects</span>
+    <span class="stack-chip">R2</span>
+  </div>
+</header>
+
+<div class="notice">
+  <strong>Why this page instead of a GitHub link:</strong> the actual repo is kept private, so this is a
+  browsable, read-only mirror of the core source instead of a dead link.
+  <ul>
+    <li>The Cloudflare Worker URL in <code>cloud.cpp</code> is redacted below &mdash; the real deployment has no
+      authentication in front of it, so publishing the live address isn't a good idea.</li>
+    <li>Compiled binaries, local SQLite save-game files (real Scrap Mechanic world data), and git history are
+      left out entirely.</li>
+  </ul>
+</div>
+
+<main>
+  <nav class="sidebar" id="fileTree">
+    <div class="tree-folder-label">src/</div>
+    <button class="tree-file" data-file="src/main.cpp">main.cpp</button>
+    <button class="tree-file" data-file="src/client.h">client.h</button>
+    <button class="tree-file" data-file="src/client.cpp">client.cpp</button>
+    <button class="tree-file" data-file="src/cloud.h">cloud.h</button>
+    <button class="tree-file" data-file="src/cloud.cpp">cloud.cpp</button>
+    <button class="tree-file" data-file="src/folder.h">folder.h</button>
+    <button class="tree-file" data-file="src/folder.cpp">folder.cpp</button>
+    <button class="tree-file" data-file="src/user.h">user.h</button>
+    <button class="tree-file" data-file="src/user.cpp">user.cpp</button>
+    <div class="tree-folder-label">cloud/</div>
+    <button class="tree-file" data-file="cloud/wrangler.jsonc">wrangler.jsonc</button>
+    <button class="tree-file" data-file="cloud/package.json">package.json</button>
+    <div class="tree-folder-label" style="padding-left:28px;">src/</div>
+    <button class="tree-file nested" data-file="cloud/src/index.ts">index.ts</button>
+  </nav>
+
+  <div class="code-area">
+    <div class="breadcrumb">ScrapMechanicWorldManager1 / <span id="breadcrumbPath">src/main.cpp</span></div>
+    <div class="code-scroll">
+      <div class="code-wrap">
+        <div class="line-numbers" id="lineNumbers"></div>
+        <pre class="code-pre"><code id="codeEl" class="language-cpp"></code></pre>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>Read-only mirror &middot; not connected to the live deployment</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/cpp.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/typescript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
+
+<script type="text/plain" id="src-main-cpp">#include &lt;iostream&gt;
+
+#include "client.h"
+#include "user.h"
+#include "cloud.h"
+#include "folder.h"
+
+namespace
+{
+    enum class WorldStatus
+    {
+        Available,
+        OwnedByMe,
+        OwnedByOther
+    };
+
+    WorldStatus classifyStatus(
+        const CloudStatus &status,
+        const std::string &clientId)
+    {
+        if (status.available)
+        {
+            return WorldStatus::Available;
+        }
+
+        if (status.owner == clientId)
+        {
+            return WorldStatus::OwnedByMe;
+        }
+
+        return WorldStatus::OwnedByOther;
+    }
+
+    // Lets the user retry the search, open the folder manually, or give up.
+    // Returns the world path once found, or empty if the user gives up.
+    std::filesystem::path resolveMissingWorld(
+        const std::filesystem::path &selectedUser)
+    {
+        std::cout
+            << "The shared world was not found."
+            << std::endl;
+
+        while (true)
+        {
+            std::cout
+                << "1: Retry\n2: Open the Folder\n3: Ignore\n";
+
+            std::cout
+                << "Enter # of option u choose: ";
+
+            int selection;
+
+            if (!(std::cin >> selection))
+            {
+                std::cout
+                    << "Please enter a number."
+                    << std::endl;
+
+                std::cin.clear();
+                std::cin.ignore(
+                    10000,
+                    '\n');
+
+                continue;
+            }
+
+            if (selection == 1)
+            {
+                std::filesystem::path worldFile =
+                    findSurvivalWorld(selectedUser);
+
+                if (!worldFile.empty())
+                {
+                    return worldFile;
+                }
+
+                std::cout
+                    << "Still not found."
+                    << std::endl;
+
+                continue;
+            }
+
+            if (selection == 2)
+            {
+                openFolder(
+                    selectedUser / "Save" / "Survival");
+
+                continue;
+            }
+
+            if (selection == 3)
+            {
+                return {};
+            }
+
+            std::cout
+                << "Not a valid choice, select something else."
+                << std::endl;
+        }
+    }
+
+    // This is a bit of a safety net for users who forget to return the world
+    void confirmReleaseOnExit(
+        const std::string &clientId)
+    {
+        std::cout
+            << "\nYou still own the checked-out world.\n"
+            << "Closing now without returning it will leave it locked\n"
+            << "to you. Releasing here will NOT upload your progress -\n"
+            << "make sure Scrap Mechanic is closed and use Return World\n"
+            << "first if you want your changes saved.\n"
+            << "Release the checkout now anyway? (y/n): ";
+
+        char answer = 'n';
+        std::cin >> answer;
+
+        if (answer != 'y' && answer != 'Y')
+        {
+            std::cout
+                << "Leaving the world checked out to you."
+                << std::endl;
+
+            return;
+        }
+
+        if (cloudRelease(clientId))
+        {
+            std::cout
+                << "Released the world."
+                << std::endl;
+        }
+        else
+        {
+            std::cout
+                << "Could not release the world."
+                << std::endl;
+        }
+    }
+}
+
+
+bool checkOutWorld(
+    const std::string &clientId,
+    const std::string &clientName,
+    const std::filesystem::path &worldFile)
+{
+    bool checkoutSuccessful =
+        cloudCheckout(
+            clientId,
+            clientName);
+
+    if (!checkoutSuccessful)
+    {
+        std::cout
+            << "Could not check out the world"
+            << std::endl;
+
+        return false;
+    }
+
+    std::cout
+        << "Successfully checked out the world!"
+        << std::endl;
+
+    bool downloadSuccessful =
+        cloudDownload(clientId, worldFile);
+
+    if (!downloadSuccessful)
+    {
+        std::cout
+            << "Could not download the world"
+            << std::endl;
+
+        // dont leave world stuck in check out if we never actually get copy
+        cloudRelease(clientId);
+
+        return false;
+    }
+
+    std::cout
+        << "Successfully downloaded the world!!"
+        << std::endl;
+
+    return true;
+}
+
+
+bool returnWorld(
+    const std::string &clientId,
+    const std::filesystem::path &worldFile)
+{
+    bool uploadSuccessful =
+        cloudUpload(clientId, worldFile);
+
+    if (!uploadSuccessful)
+    {
+        std::cout
+            << "Could not upload the world."
+            << std::endl;
+
+        return false;
+    }
+
+    std::cout
+        << "Successfully uploaded the world!"
+        << std::endl;
+
+    bool releaseSuccessful =
+        cloudRelease(clientId);
+
+    if (!releaseSuccessful)
+    {
+        std::cout
+            << "Could not release the world."
+            << std::endl;
+
+        return false;
+    }
+
+    std::cout
+        << "Successfully released the world."
+        << std::endl;
+
+    return true;
+}
+
+
+int main()
+{
+    // get ClientId() will generate a new one if it doesn't exist yet
+    std::string clientId = getClientId();
+
+    if (clientId.empty())
+    {
+        return 1;
+    }
+
+    std::cout
+        << "Client ID: "
+        << clientId
+        << std::endl;
+
+    // saved client name grabbber
+    std::string clientName = getClientName();
+
+    // u are john doe and you forgot to set your name in the config file so we ask for it
+    if (clientName.empty())
+    {
+        clientName = promptClientName();
+
+        if (clientName.empty())
+        {
+            return 1;
+        }
+    }
+
+    std::cout
+        << "Client Name: "
+        << clientName
+        << std::endl;
+
+    // finding all users on ur computer
+    std::vector&lt;std::filesystem::path&gt; validUsers =
+        findValidUsers();
+
+    if (validUsers.empty())
+    {
+        std::cout
+            << "No valid Scrap Mechanic users found."
+            << std::endl;
+
+        return 1;
+    }
+
+    // Use the previously saved user, if there is one.
+    std::filesystem::path selectedUser =
+        getSelectedUser();
+
+    // never saved a user b4
+    if (selectedUser.empty())
+    {
+        std::filesystem::path chosenUser =
+            promptSelectUser(validUsers);
+
+        selectedUser =
+            setSelectedUser(chosenUser);
+
+        if (selectedUser.empty())
+        {
+            return 1;
+        }
+    }
+
+    std::cout
+        << "Scrap Mechanic user: "
+        << selectedUser.filename()
+        << std::endl;
+
+    // find the world :D
+    std::filesystem::path worldFile =
+        findSurvivalWorld(selectedUser);
+
+    if (worldFile.empty())
+    {
+        worldFile = resolveMissingWorld(selectedUser);
+
+        if (worldFile.empty())
+        {
+            std::cout
+                << "World Not Found"
+                << std::endl;
+
+            return 0;
+        }
+    }
+
+    std::cout
+        << "Shared world found:\n"
+        << worldFile
+        << std::endl;
+
+
+    // finding out which main screen states we are in
+    CloudStatus status = cloudGetStatus();
+
+    WorldStatus worldStatus =
+        classifyStatus(status, clientId);
+
+    switch (worldStatus)
+    {
+        case WorldStatus::Available:
+        {
+            std::cout
+                << "The world is single and ready to mingle. Check it out? (y/n): ";
+
+            char answer = 'n';
+            std::cin >> answer;
+
+            if (answer == 'y' || answer == 'Y')
+            {
+                checkOutWorld(clientId, clientName, worldFile);
+            }
+
+            break;
+        }
+
+        case WorldStatus::OwnedByMe:
+        {
+            std::cout
+                << "You dominate the world rn. Return it? (y/n): ";
+
+            char answer = 'n';
+            std::cin >> answer;
+
+            if (answer == 'y' || answer == 'Y')
+            {
+                returnWorld(clientId, worldFile);
+            }
+            else
+            {
+                confirmReleaseOnExit(clientId);
+            }
+
+            break;
+        }
+
+        case WorldStatus::OwnedByOther:
+        {
+            std::cout
+                << (status.ownerName.empty()
+                        ? status.owner
+                        : status.ownerName)
+                << " owns the world right now, text them"
+                << std::endl;
+
+            break;
+        }
+    }
+
+    return 0;
+}
+</script>
+
+<script type="text/plain" id="src-client-h">#pragma once
+
+#include &lt;string&gt;
+#include &lt;filesystem&gt;
+// hey dude this basically now manages dope shi fire emoji
+std::filesystem::path getClientDataFolder();
+
+std::string getClientId();
+
+std::string getClientName();
+std::string setClientName(const std::string& name);
+std::string promptClientName();
+</script>
+
+<script type="text/plain" id="src-client-cpp">#include "client.h"
+
+#include &lt;cstdlib&gt;
+#include &lt;filesystem&gt;
+#include &lt;fstream&gt;
+#include &lt;iostream&gt;
+#include &lt;random&gt;
+#include &lt;sstream&gt;
+#include &lt;iomanip&gt;
+#include &lt;nlohmann/json.hpp&gt;
+
+namespace
+{
+    std::string generateClientId()
+    {
+        std::random_device randomDevice;
+        std::mt19937 generator(randomDevice());
+
+        std::uniform_int_distribution&lt;unsigned int&gt; distribution(
+            0,
+            0xFFFFFFFF);
+
+        std::stringstream id;
+
+        for (int i = 0; i &lt; 4; i++)
+        {
+            id << std::hex
+               << std::setw(8)
+               << std::setfill('0')
+               << distribution(generator);
+        }
+
+        return id.str();
+    }
+
+    std::filesystem::path getClientIdFile()
+    {
+        std::filesystem::path folder = getClientDataFolder();
+
+        if (folder.empty())
+        {
+            return {};
+        }
+
+        return folder / "client_id.json";
+    }
+}
+
+
+std::filesystem::path getClientDataFolder()
+{
+    const char* appData = std::getenv("APPDATA");
+
+    if (appData == nullptr)
+    {
+        return {};
+    }
+
+    return std::filesystem::path(appData) /
+           "ScrapMechanicWorldManager";
+}
+
+
+std::string getClientId()
+{
+    std::filesystem::path clientIdFile = getClientIdFile();
+
+    if (clientIdFile.empty())
+    {
+        std::cout << "Could not determine AppData folder."
+                  << std::endl;
+
+        return "";
+    }
+
+    // Try to read an existing ID.
+    std::ifstream inputFile(clientIdFile);
+
+    if (inputFile)
+    {
+        try
+        {
+            nlohmann::json data =
+                nlohmann::json::parse(inputFile);
+
+            if (data.contains("clientId") &&
+                data["clientId"].is_string())
+            {
+                std::string id = data["clientId"];
+
+                if (!id.empty())
+                {
+                    return id;
+                }
+            }
+        }
+        catch (const nlohmann::json::parse_error&)
+        {
+            std::cout
+                << "Could not read client data: invalid JSON."
+                << std::endl;
+        }
+    }
+
+    // No valid ID exists, so create the application
+    // data folder.
+    std::filesystem::path clientDataFolder =
+        clientIdFile.parent_path();
+
+    std::error_code error;
+
+    std::filesystem::create_directories(
+        clientDataFolder,
+        error);
+
+    if (error)
+    {
+        std::cout << "Could not create client data folder."
+                  << std::endl;
+
+        return "";
+    }
+
+    // Generate a new ID.
+    std::string newId = generateClientId();
+
+    // Save it.
+    std::ofstream outputFile(clientIdFile);
+
+    if (!outputFile)
+    {
+        std::cout << "Could not save client ID."
+                  << std::endl;
+
+        return "";
+    }
+
+    nlohmann::json data;
+
+    data["clientId"] = newId;
+
+    outputFile << data.dump(4);
+
+    return newId;
+}
+
+
+std::string getClientName()
+{
+    std::filesystem::path clientIdFile =
+        getClientIdFile();
+
+    if (clientIdFile.empty())
+    {
+        std::cout << "Could not determine AppData folder."
+                  << std::endl;
+
+        return "";
+    }
+
+    std::ifstream inputFile(clientIdFile);
+
+    if (!inputFile)
+    {
+        return "";
+    }
+
+    try
+    {
+        nlohmann::json data =
+            nlohmann::json::parse(inputFile);
+
+        if (data.contains("clientName") &&
+            data["clientName"].is_string())
+        {
+            std::string name = data["clientName"];
+
+            if (!name.empty())
+            {
+                return name;
+            }
+        }
+    }
+    catch (const nlohmann::json::parse_error&)
+    {
+        std::cout
+            << "Could not read client data: invalid JSON."
+            << std::endl;
+    }
+
+    return "";
+}
+
+
+std::string setClientName(const std::string& name)
+{
+    if (name.empty())
+    {
+        std::cout << "Name cannot be empty."
+                  << std::endl;
+
+        return "";
+    }
+
+    std::filesystem::path clientIdFile =
+        getClientIdFile();
+
+    if (clientIdFile.empty())
+    {
+        std::cout << "Could not determine AppData folder."
+                  << std::endl;
+
+        return "";
+    }
+
+    std::ifstream inputFile(clientIdFile);
+
+    if (!inputFile)
+    {
+        std::cout << "Could not open client data file."
+                  << std::endl;
+
+        return "";
+    }
+
+    nlohmann::json data;
+
+    try
+    {
+        data = nlohmann::json::parse(inputFile);
+    }
+    catch (const nlohmann::json::parse_error&)
+    {
+        std::cout
+            << "Could not read client data: invalid JSON."
+            << std::endl;
+
+        return "";
+    }
+
+    inputFile.close();
+
+    data["clientName"] = name;
+
+    std::ofstream outputFile(clientIdFile);
+
+    if (!outputFile)
+    {
+        std::cout << "Could not save client name."
+                  << std::endl;
+
+        return "";
+    }
+
+    outputFile << data.dump(4);
+
+    return name;
+}
+
+
+std::string promptClientName()
+{
+    std::cout << "Enter your name: ";
+
+    std::string name;
+
+    if (!std::getline(std::cin >> std::ws, name))
+    {
+        std::cout << "Could not read your name."
+                  << std::endl;
+
+        return "";
+    }
+
+    return setClientName(name);
+}
+</script>
+
+<script type="text/plain" id="src-cloud-h">#pragma once
+// hey dude this basically now manages the user and the world file for sm in the best way ever fire emoji
+#include &lt;string&gt;
+#include &lt;filesystem&gt;
+
+struct CloudStatus
+{
+    bool available;
+    std::string owner;
+    std::string ownerName;
+};
+
+CloudStatus cloudGetStatus();
+
+bool cloudCheckout(
+    const std::string& clientId,
+    const std::string& clientName);
+bool cloudRelease(const std::string& clientId);
+
+
+bool cloudUpload(
+    const std::string& clientId,
+    const std::filesystem::path& worldFile);
+
+bool cloudDownload(
+    const std::string& clientId,
+    const std::filesystem::path& worldFile);
+</script>
+
+<script type="text/plain" id="src-cloud-cpp">#include "cloud.h"
+#include &lt;curl/curl.h&gt;
+#include &lt;nlohmann/json.hpp&gt;
+#include &lt;iostream&gt;
+#include &lt;string&gt;
+#include &lt;fstream&gt;
+
+size_t writeFileCallback(
+    char *data,
+    size_t size,
+    size_t count,
+    void *userData)
+{
+    std::ofstream *file =
+        static_cast&lt;std::ofstream *&gt;(userData);
+
+    if (file == nullptr)
+    {
+        return 0;
+    }
+
+    size_t totalSize = size * count;
+
+    file->write(
+        data,
+        static_cast&lt;std::streamsize&gt;(totalSize));
+
+    if (!file->good())
+    {
+        return 0;
+    }
+
+    return totalSize;
+}
+
+namespace
+{
+    // Redacted for the public code viewer — the real Worker has no auth
+    // in front of it, so the live address isn't published here.
+    const std::string WORKER_URL =
+        "https://&lt;redacted&gt;.workers.dev";
+
+    size_t writeCallback(
+        char *data,
+        size_t size,
+        size_t numberOfBytes,
+        std::string *output)
+    {
+        size_t totalSize = size * numberOfBytes;
+
+        output->append(data, totalSize);
+
+        return totalSize;
+    }
+}
+
+CloudStatus cloudGetStatus()
+{
+    CloudStatus status{
+        false,
+        "",
+        ""};
+
+    CURL *curl = curl_easy_init();
+
+    if (curl == nullptr)
+    {
+        std::cout
+            << "Could not initialize curl."
+            << std::endl;
+
+        return status;
+    }
+
+    std::string response;
+
+    std::string url =
+        WORKER_URL + "/status";
+
+    curl_easy_setopt(
+        curl,
+        CURLOPT_URL,
+        url.c_str());
+
+    curl_easy_setopt(
+        curl,
+        CURLOPT_WRITEFUNCTION,
+        writeCallback);
+
+    curl_easy_setopt(
+        curl,
+        CURLOPT_WRITEDATA,
+        &response);
+
+    CURLcode result =
+        curl_easy_perform(curl);
+
+    if (result != CURLE_OK)
+    {
+        std::cout
+            << "Cloud request failed: "
+            << curl_easy_strerror(result)
+            << std::endl;
+
+        curl_easy_cleanup(curl);
+
+        return status;
+    }
+
+    curl_easy_cleanup(curl);
+
+    try
+    {
+        nlohmann::json data =
+            nlohmann::json::parse(response);
+
+        if (data.contains("available") &&
+            data["available"].is_boolean())
+        {
+            status.available =
+                data["available"];
+        }
+
+        if (data.contains("owner") &&
+            data["owner"].is_string())
+        {
+            status.owner =
+                data["owner"];
+        }
+
+        if (data.contains("ownerName") &&
+            data["ownerName"].is_string())
+        {
+            status.ownerName =
+                data["ownerName"];
+        }
+    }
+    catch (const nlohmann::json::parse_error &)
+    {
+        std::cout
+            << "Could not parse cloud status."
+            << std::endl;
+    }
+
+    return status;
+}
+
+bool cloudCheckout(
+    const std::string &clientId,
+    const std::string &clientName)
+{
+    CURL *curl = curl_easy_init();
+
+    if (curl == nullptr)
+    {
+        std::cout
+            << "Could not initialize curl."
+            << std::endl;
+
+        return false;
+    }
+
+    std::string response;
+
+    std::string url =
+        WORKER_URL + "/checkout";
+
+    nlohmann::json data;
+
+    data["clientId"] = clientId;
+    data["clientName"] = clientName;
+
+    std::string requestBody =
+        data.dump();
+
+    curl_easy_setopt(
+        curl,
+        CURLOPT_URL,
+        url.c_str());
+
+    curl_easy_setopt(
+        curl,
+        CURLOPT_POST,
+        1L);
+
+    curl_easy_setopt(
+        curl,
+        CURLOPT_POSTFIELDS,
+        requestBody.c_str());
+
+    struct curl_slist *headers = nullptr;
+
+    headers = curl_slist_append(
+        headers,
+        "Content-Type: application/json");
+
+    if (headers == nullptr)
+    {
+        std::cout
+            << "Could not create HTTP headers."
+            << std::endl;
+
+        curl_easy_cleanup(curl);
+
+        return false;
+    }
+
+    curl_easy_setopt(
+        curl,
+        CURLOPT_HTTPHEADER,
+        headers);
+
+    curl_easy_setopt(
+        curl,
+        CURLOPT_WRITEFUNCTION,
+        writeCallback);
+
+    curl_easy_setopt(
+        curl,
+        CURLOPT_WRITEDATA,
+        &response);
+
+    CURLcode result =
+        curl_easy_perform(curl);
+
+    if (result != CURLE_OK)
+    {
+        std::cout
+            << "Cloud checkout failed: "
+            << curl_easy_strerror(result)
+            << std::endl;
+
+        curl_slist_free_all(headers);
+        curl_easy_cleanup(curl);
+
+        return false;
+    }
+
+    curl_slist_free_all(headers);
+    curl_easy_cleanup(curl);
+
+    try
+    {
+        nlohmann::json responseData =
+            nlohmann::json::parse(response);
+
+        if (responseData.contains("success") &&
+            responseData["success"].is_boolean())
+        {
+            if (!responseData["success"])
+            {
+                if (responseData.contains("ownerName") &&
+                    responseData["ownerName"].is_string())
+                {
+                    std::cout
+                        << "Cloud world is owned by: "
+                        << responseData["ownerName"].get&lt;std::string&gt;()
+                        << std::endl;
+                }
+            }
+
+            return responseData["success"];
+        }
+    }
+    catch (const nlohmann::json::parse_error &)
+    {
+        std::cout
+            << "Could not parse cloud checkout response."
+            << std::endl;
+    }
+
+    return false;
+}
+
+bool cloudUpload(
+    const std::string &clientId,
+    const std::filesystem::path &worldFile)
+{
+    // Open the world file on up
+    std::ifstream inputFile(
+        worldFile,
+        std::ios::binary);
+
+    if (!inputFile)
+    {
+        std::cout
+            << "Could not open world file."
+            << std::endl;
+
+        return false;
+    }
+
+    // Read the entire file into memory ( only rlly good for baby files btw )
+    std::string fileData{
+        std::istreambuf_iterator&lt;char&gt;(inputFile),
+        std::istreambuf_iterator&lt;char&gt;()};
+
+    inputFile.close();
+
+    CURL *curl = curl_easy_init();
+
+    if (curl == nullptr)
+    {
+        std::cout
+            << "Could not initialize curl."
+            << std::endl;
+
+        return false;
+    }
+
+    std::string response;
+
+    std::string url =
+        WORKER_URL + "/upload";
+
+    curl_easy_setopt(
+        curl,
+        CURLOPT_URL,
+        url.c_str());
+
+    curl_easy_setopt(
+        curl,
+        CURLOPT_POST,
+        1L);
+
+    curl_easy_setopt(
+        curl,
+        CURLOPT_POSTFIELDS,
+        fileData.data());
+
+    curl_easy_setopt(
+        curl,
+        CURLOPT_POSTFIELDSIZE,
+        static_cast&lt;long&gt;(fileData.size()));
+
+    struct curl_slist *headers = nullptr;
+
+    std::string clientHeader =
+        "X-Client-ID: " + clientId;
+
+    headers = curl_slist_append(
+        headers,
+        clientHeader.c_str());
+
+    curl_easy_setopt(
+        curl,
+        CURLOPT_HTTPHEADER,
+        headers);
+
+    curl_easy_setopt(
+        curl,
+        CURLOPT_WRITEFUNCTION,
+        writeCallback);
+
+    curl_easy_setopt(
+        curl,
+        CURLOPT_WRITEDATA,
+        &response);
+
+    CURLcode result =
+        curl_easy_perform(curl);
+
+    if (result != CURLE_OK)
+    {
+        std::cout
+            << "Cloud upload failed: "
+            << curl_easy_strerror(result)
+            << std::endl;
+
+        curl_slist_free_all(headers);
+        curl_easy_cleanup(curl);
+
+        return false;
+    }
+
+    long responseCode = 0;
+
+    curl_easy_getinfo(
+        curl,
+        CURLINFO_RESPONSE_CODE,
+        &responseCode);
+
+    curl_slist_free_all(headers);
+    curl_easy_cleanup(curl);
+
+    if (responseCode != 200)
+    {
+        std::cout
+            << "Cloud upload rejected. HTTP status: "
+            << responseCode
+            << std::endl;
+
+        return false;
+    }
+
+    try
+    {
+        nlohmann::json data =
+            nlohmann::json::parse(response);
+
+        if (data.contains("success") &&
+            data["success"].is_boolean())
+        {
+            return data["success"];
+        }
+    }
+    catch (const nlohmann::json::parse_error &)
+    {
+        std::cout
+            << "Could not parse cloud upload response"
+            << std::endl;
+    }
+
+    return false;
+}
+
+bool cloudDownload(
+    const std::string &clientId,
+    const std::filesystem::path &worldFile)
+{
+    CURL *curl = curl_easy_init();
+
+    if (curl == nullptr)
+    {
+        std::cout
+            << "Could not initialize curl"
+            << std::endl;
+
+        return false;
+    }
+
+    // Create a temp file We dont wanna overwrite existing world everything would explode if dwn fails
+    std::filesystem::path temporaryFile =
+        worldFile;
+
+    temporaryFile += ".download";
+
+    std::ofstream outputFile(
+        temporaryFile,
+        std::ios::binary);
+
+    if (!outputFile)
+    {
+        std::cout
+            << "Could not create temp download file oopsies"
+            << std::endl;
+
+        curl_easy_cleanup(curl);
+
+        return false;
+    }
+
+    std::string url =
+        WORKER_URL + "/download";
+
+    curl_easy_setopt(
+        curl,
+        CURLOPT_URL,
+        url.c_str());
+
+    curl_easy_setopt(
+        curl,
+        CURLOPT_HTTPGET,
+        1L);
+
+    // Tell curl how to write the downloaded data
+    curl_easy_setopt(
+        curl,
+        CURLOPT_WRITEFUNCTION,
+        writeFileCallback);
+
+    curl_easy_setopt(
+        curl,
+        CURLOPT_WRITEDATA,
+        &outputFile);
+
+    std::string clientHeader =
+        "X-Client-ID: " + clientId;
+
+    struct curl_slist *headers =
+        curl_slist_append(
+            nullptr,
+            clientHeader.c_str());
+
+    if (headers == nullptr)
+    {
+        std::cout
+            << "Could not create HTTP headers."
+            << std::endl;
+
+        outputFile.close();
+
+        curl_easy_cleanup(curl);
+
+        std::error_code error;
+
+        std::filesystem::remove(
+            temporaryFile,
+            error);
+
+        return false;
+    }
+
+    curl_easy_setopt(
+        curl,
+        CURLOPT_HTTPHEADER,
+        headers);
+
+    // Perform the actual download
+    CURLcode result =
+        curl_easy_perform(curl);
+
+    // We are done writing to the file soooo over it
+    outputFile.close();
+
+    // Check whether curl itself encountered an error because of humidity
+    if (result != CURLE_OK)
+    {
+        std::cout
+            << "Cloud download failed: "
+            << curl_easy_strerror(result)
+            << std::endl;
+
+        curl_slist_free_all(headers);
+        curl_easy_cleanup(curl);
+
+        std::error_code error;
+
+        std::filesystem::remove(
+            temporaryFile,
+            error);
+
+        return false;
+    }
+
+    // Get the HTTP response code from the Worker bee
+    long responseCode = 0;
+
+    curl_easy_getinfo(
+        curl,
+        CURLINFO_RESPONSE_CODE,
+        &responseCode);
+
+    curl_slist_free_all(headers);
+    curl_easy_cleanup(curl);
+
+    // The Worker should return HTTP 200 for a successful download because the world is checked out to us :D
+    if (responseCode != 200)
+    {
+        std::cout
+            << "Cloud download rejected. HTTP status: "
+            << responseCode
+            << std::endl;
+
+        std::error_code error;
+
+        std::filesystem::remove(
+            temporaryFile,
+            error);
+
+        return false;
+    }
+
+    // atp the download succeeded
+    // Now replace the local world
+
+    std::error_code error;
+
+    // Remove the old world shi is used up
+    std::filesystem::remove(
+        worldFile,
+        error);
+
+    if (error)
+    {
+        std::cout
+            << "Could not remove existing world file: "
+            << error.message()
+            << std::endl;
+
+        std::filesystem::remove(
+            temporaryFile);
+
+        return false;
+    }
+
+    // Rename the downloaded temporary file to the actual world filename.
+    std::filesystem::rename(
+        temporaryFile,
+        worldFile,
+        error);
+
+    if (error)
+    {
+        std::cout
+            << "Could not replace world file bc irreplaceable heart emoji: "
+            << error.message()
+            << std::endl;
+
+        std::filesystem::remove(
+            temporaryFile);
+
+        return false;
+    }
+
+    std::cout
+        << "Successfully downloaded the world."
+        << std::endl;
+
+    return true;
+}
+
+bool cloudRelease(
+    const std::string &clientId)
+{
+    CURL *curl = curl_easy_init();
+
+    if (curl == nullptr)
+    {
+        std::cout
+            << "Could not initialize curl of the hair"
+            << std::endl;
+
+        return false;
+    }
+
+    std::string url =
+        WORKER_URL + "/release";
+
+    // The Worker expects the client ID in the
+    // JSON request body so give it over to him to use as he pleases
+    nlohmann::json requestData;
+
+    requestData["clientId"] = clientId;
+
+    std::string requestBody =
+        requestData.dump();
+
+    curl_easy_setopt(
+        curl,
+        CURLOPT_URL,
+        url.c_str());
+
+    curl_easy_setopt(
+        curl,
+        CURLOPT_POST,
+        1L);
+
+    curl_easy_setopt(
+        curl,
+        CURLOPT_POSTFIELDS,
+        requestBody.c_str());
+
+    // Tell the Worker that we're sending jason bateman
+    struct curl_slist *headers = nullptr;
+
+    headers = curl_slist_append(
+        headers,
+        "Content-Type: application/json");
+
+    curl_easy_setopt(
+        curl,
+        CURLOPT_HTTPHEADER,
+        headers);
+
+    CURLcode result =
+        curl_easy_perform(curl);
+
+    if (result != CURLE_OK)
+    {
+        std::cout
+            << "Cloud release failed: "
+            << curl_easy_strerror(result)
+            << std::endl;
+
+        curl_slist_free_all(headers);
+        curl_easy_cleanup(curl);
+
+        return false;
+    }
+
+    long responseCode = 0;
+
+    curl_easy_getinfo(
+        curl,
+        CURLINFO_RESPONSE_CODE,
+        &responseCode);
+
+    curl_slist_free_all(headers);
+    curl_easy_cleanup(curl);
+
+    if (responseCode != 200)
+    {
+        std::cout
+            << "Cloud release rejected. HTTP status: "
+            << responseCode
+            << std::endl;
+
+        return false;
+    }
+
+    std::cout
+        << "Successfully released the world."
+        << std::endl;
+
+    return true;
+}
+</script>
+
+<script type="text/plain" id="src-folder-h">#include &lt;filesystem&gt;
+
+void openFolder(const std::filesystem::path& folder);
+</script>
+
+<script type="text/plain" id="src-folder-cpp">#include &lt;windows.h&gt;
+#include &lt;shellapi.h&gt;
+#include &lt;filesystem&gt;
+#include "folder.h"
+
+void openFolder(const std::filesystem::path& folder)
+{
+    ShellExecuteW(
+        nullptr,
+        L"open",
+        folder.c_str(),
+        nullptr,
+        nullptr,
+        SW_SHOWNORMAL
+    );
+}
+</script>
+
+<script type="text/plain" id="src-user-h">#pragma once
+
+#include &lt;filesystem&gt;
+#include &lt;vector&gt;
+// hey dude this basically now manages the user and the world file for sm
+// finds the user, finds the world, saves the user for next time
+// checks out the world from the cloud if needed
+std::vector&lt;std::filesystem::path&gt; findValidUsers();
+
+std::filesystem::path promptSelectUser(
+    const std::vector&lt;std::filesystem::path&gt;& validUsers);
+
+std::filesystem::path getSelectedUser();
+
+std::filesystem::path setSelectedUser(
+    const std::filesystem::path& selectedUser);
+
+std::filesystem::path findSurvivalWorld(
+    const std::filesystem::path& selectedUser);
+</script>
+
+<script type="text/plain" id="src-user-cpp">#include "user.h"
+#include "client.h"
+
+#include &lt;iostream&gt;
+#include &lt;cstdlib&gt;
+#include &lt;filesystem&gt;
+#include &lt;vector&gt;
+#include &lt;fstream&gt;
+#include &lt;nlohmann/json.hpp&gt;
+
+const std::string WORLD_NAME = "ServerTest";
+
+namespace
+{
+    std::filesystem::path getClientDataFile()
+    {
+        std::filesystem::path folder =
+            getClientDataFolder();
+
+        if (folder.empty())
+        {
+            return {};
+        }
+
+        return folder / "client_id.json";
+    }
+}
+
+std::vector&lt;std::filesystem::path&gt; findValidUsers()
+{
+    std::vector&lt;std::filesystem::path&gt; validUsers;
+
+    const char *userProfile =
+        std::getenv("USERPROFILE");
+
+    if (userProfile == nullptr)
+    {
+        return validUsers;
+    }
+
+    std::filesystem::path userFolder(userProfile);
+
+    std::filesystem::path scrapMechanicUsers =
+        userFolder /
+        "AppData" /
+        "Roaming" /
+        "Axolot Games" /
+        "Scrap Mechanic" /
+        "User";
+
+    if (!std::filesystem::exists(scrapMechanicUsers))
+    {
+        return validUsers;
+    }
+
+    for (const auto &item :
+         std::filesystem::directory_iterator(
+             scrapMechanicUsers))
+    {
+        if (!item.is_directory())
+        {
+            continue;
+        }
+
+        std::filesystem::path survivalFolder =
+            item.path() / "Save" / "Survival";
+
+        if (std::filesystem::is_directory(
+                survivalFolder))
+        {
+            validUsers.push_back(item.path());
+        }
+    }
+
+    return validUsers;
+}
+
+std::filesystem::path promptSelectUser(
+    const std::vector&lt;std::filesystem::path&gt; &validUsers)
+{
+    if (validUsers.size() == 0)
+    {
+        std::cout
+            << "No valid users detected."
+            << std::endl;
+
+        return {};
+    }
+
+    if (validUsers.size() == 1)
+    {
+        std::cout
+            << "One user detected."
+            << std::endl;
+
+        return validUsers[0];
+    }
+
+    std::cout
+        << "Multiple users detected, make a selection:\n";
+
+    for (int i = 0; i &lt; validUsers.size(); i++)
+    {
+        std::cout
+            << i + 1
+            << ". "
+            << validUsers[i].filename()
+            << std::endl;
+    }
+
+    while (true)
+    {
+        std::cout
+            << "Enter the number of the user you want to use: ";
+
+        int selection;
+
+        if (std::cin >> selection)
+        {
+            if (selection >= 1 &&
+                selection &lt;= validUsers.size())
+            {
+                return validUsers[selection - 1];
+            }
+
+            std::cout
+                << "Invalid selection try again."
+                << std::endl;
+        }
+        else
+        {
+            std::cout
+                << "Magician be like: enter a number"
+                << std::endl;
+
+            std::cin.clear();
+            std::cin.ignore(
+                10000,
+                '\n');
+        }
+    }
+}
+
+std::filesystem::path getSelectedUser()
+{
+    std::filesystem::path clientDataFile =
+        getClientDataFile();
+
+    if (clientDataFile.empty())
+    {
+        return {};
+    }
+
+    std::ifstream inputFile(clientDataFile);
+
+    if (!inputFile)
+    {
+        return {};
+    }
+
+    nlohmann::json data;
+
+    try
+    {
+        data =
+            nlohmann::json::parse(inputFile);
+    }
+    catch (const nlohmann::json::parse_error &)
+    {
+        std::cout
+            << "Could not read client data: invalid JSON."
+            << std::endl;
+
+        return {};
+    }
+
+    if (!data.contains("scrapMechanicUser") ||
+        !data["scrapMechanicUser"].is_string())
+    {
+        return {};
+    }
+
+    std::string userName =
+        data["scrapMechanicUser"];
+
+    if (userName.empty())
+    {
+        return {};
+    }
+
+    const char *userProfile =
+        std::getenv("USERPROFILE");
+
+    if (userProfile == nullptr)
+    {
+        return {};
+    }
+
+    std::filesystem::path userFolder(userProfile);
+
+    std::filesystem::path selectedUser =
+        userFolder /
+        "AppData" /
+        "Roaming" /
+        "Axolot Games" /
+        "Scrap Mechanic" /
+        "User" /
+        userName;
+
+    // is saved user based? (valid)
+    std::filesystem::path survivalFolder =
+        selectedUser /
+        "Save" /
+        "Survival";
+
+    if (!std::filesystem::is_directory(
+            survivalFolder))
+    {
+        return {};
+    }
+
+    return selectedUser;
+}
+
+std::filesystem::path setSelectedUser(
+    const std::filesystem::path &selectedUser)
+{
+    if (selectedUser.empty())
+    {
+        return {};
+    }
+
+    std::filesystem::path clientDataFile =
+        getClientDataFile();
+
+    if (clientDataFile.empty())
+    {
+        return {};
+    }
+
+    std::ifstream inputFile(clientDataFile);
+
+    if (!inputFile)
+    {
+        std::cout
+            << "Could not open client data file 4 required reading"
+            << std::endl;
+
+        return {};
+    }
+
+    nlohmann::json data;
+
+    try
+    {
+        data =
+            nlohmann::json::parse(inputFile);
+    }
+    catch (const nlohmann::json::parse_error &)
+    {
+        std::cout
+            << "Could not read client data bc invalid JSON"
+            << std::endl;
+
+        return {};
+    }
+
+    // Save only the user folder name
+    data["scrapMechanicUser"] =
+        selectedUser.filename().string();
+
+    std::ofstream outputFile(clientDataFile);
+
+    if (!outputFile)
+    {
+        std::cout
+            << "Could not save selected user"
+            << std::endl;
+
+        return {};
+    }
+
+    outputFile << data.dump(4);
+
+    return selectedUser;
+}
+
+std::filesystem::path findSurvivalWorld(
+    const std::filesystem::path &selectedUser)
+{
+    std::filesystem::path worldFile =
+        selectedUser /
+        "Save" /
+        "Survival" /
+        (WORLD_NAME + ".db");
+
+    if (!std::filesystem::is_regular_file(
+            worldFile))
+    {
+        return {};
+    }
+
+    return worldFile;
+}
+</script>
+
+<script type="text/plain" id="cloud-wrangler-jsonc">{
+  "name": "scrap-mechanic-worker",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-08-16",
+
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "WORLD_STATE",
+        "class_name": "WorldState"
+      }
+    ]
+  },
+
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": [
+        "WorldState"
+      ]
+    }
+  ],
+
+  "r2_buckets": [
+    {
+      "binding": "WORLD_BUCKET",
+      "bucket_name": "scrap-mechanic-world"
+    }
+  ],
+
+  "observability": {
+    "enabled": true
+  }
+}
+</script>
+
+<script type="text/plain" id="cloud-package-json">{
+	"name": "cloud",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"deploy": "wrangler deploy",
+		"dev": "wrangler dev",
+		"start": "wrangler dev",
+		"cf-typegen": "wrangler types"
+	},
+	"devDependencies": {
+		"typescript": "^5.5.2",
+		"wrangler": "^4.123.0"
+	}
+}
+</script>
+
+<script type="text/plain" id="cloud-src-index-ts">import { DurableObject } from "cloudflare:workers";
+
+const WORLD_NAME = "ServerTest";
+const WORLD_FILE = `${WORLD_NAME}.db`;
+
+const CHECKOUT_DURATION_MS =
+	24 * 60 * 60 * 1000;
+
+
+// ============================================================
+// DURABLE OBJECT
+// ============================================================
+
+export class WorldState extends DurableObject&lt;Env&gt; {
+
+	// ------------------------------------------------------------
+	// Clear an expired checkout if necessary.
+	// ------------------------------------------------------------
+
+	private async clearExpiredCheckout(): Promise&lt;void&gt; {
+
+		const expirationTime =
+			await this.ctx.storage.get&lt;number&gt;(
+				"expirationTime"
+			);
+
+		if (
+			expirationTime !== undefined &&
+			Date.now() >= expirationTime
+		) {
+
+			await this.ctx.storage.delete("owner");
+			await this.ctx.storage.delete("ownerName");
+			await this.ctx.storage.delete("checkoutTime");
+			await this.ctx.storage.delete("expirationTime");
+		}
+	}
+
+
+	// ------------------------------------------------------------
+	// STATUS
+	// ------------------------------------------------------------
+
+	async getStatus(): Promise&lt;{
+		available: boolean;
+		owner: string;
+		ownerName: string;
+		version: number;
+		checkoutTime: string;
+		expirationTime: string;
+	}&gt; {
+
+		await this.clearExpiredCheckout();
+
+		const owner =
+			await this.ctx.storage.get&lt;string&gt;("owner");
+
+		const ownerName =
+			await this.ctx.storage.get&lt;string&gt;("ownerName");
+
+		const checkoutTime =
+			await this.ctx.storage.get&lt;number&gt;("checkoutTime");
+
+		const expirationTime =
+			await this.ctx.storage.get&lt;number&gt;("expirationTime");
+
+		const version =
+			await this.ctx.storage.get&lt;number&gt;("version") ?? 0;
+
+
+		return {
+			available: owner === undefined,
+
+			owner:
+				owner ?? "",
+
+			ownerName:
+				ownerName ?? "",
+
+			version,
+
+			checkoutTime:
+				checkoutTime !== undefined
+					? new Date(checkoutTime).toISOString()
+					: "",
+
+			expirationTime:
+				expirationTime !== undefined
+					? new Date(expirationTime).toISOString()
+					: ""
+		};
+	}
+
+
+	// ------------------------------------------------------------
+	// CHECKOUT
+	// ------------------------------------------------------------
+
+	async checkout(
+		clientId: string,
+		clientName: string
+	): Promise&lt;{
+		success: boolean;
+		owner: string;
+		ownerName: string;
+		version: number;
+		checkoutTime: string;
+		expirationTime: string;
+	}&gt; {
+
+		await this.clearExpiredCheckout();
+
+		const currentOwner =
+			await this.ctx.storage.get&lt;string&gt;("owner");
+
+		const currentOwnerName =
+			await this.ctx.storage.get&lt;string&gt;("ownerName");
+
+		const version =
+			await this.ctx.storage.get&lt;number&gt;("version") ?? 0;
+
+
+		// Someone already owns the world.
+		if (currentOwner !== undefined) {
+
+			const currentCheckoutTime =
+				await this.ctx.storage.get&lt;number&gt;(
+					"checkoutTime"
+				);
+
+			const currentExpirationTime =
+				await this.ctx.storage.get&lt;number&gt;(
+					"expirationTime"
+				);
+
+			return {
+				success: false,
+
+				owner:
+					currentOwner,
+
+				ownerName:
+					currentOwnerName ?? "",
+
+				version,
+
+				checkoutTime:
+					currentCheckoutTime !== undefined
+						? new Date(
+							currentCheckoutTime
+						).toISOString()
+						: "",
+
+				expirationTime:
+					currentExpirationTime !== undefined
+						? new Date(
+							currentExpirationTime
+						).toISOString()
+						: ""
+			};
+		}
+
+
+		// Nobody owns it, so give it to this client.
+		const checkoutTime =
+			Date.now();
+
+		const expirationTime =
+			checkoutTime +
+			CHECKOUT_DURATION_MS;
+
+
+		await this.ctx.storage.put(
+			"owner",
+			clientId
+		);
+
+		await this.ctx.storage.put(
+			"ownerName",
+			clientName
+		);
+
+		await this.ctx.storage.put(
+			"checkoutTime",
+			checkoutTime
+		);
+
+		await this.ctx.storage.put(
+			"expirationTime",
+			expirationTime
+		);
+
+
+		// Schedule automatic expiration.
+		await this.ctx.storage.setAlarm(
+			expirationTime
+		);
+
+
+		return {
+			success: true,
+
+			owner:
+				clientId,
+
+			ownerName:
+				clientName,
+
+			version,
+
+			checkoutTime:
+				new Date(
+					checkoutTime
+				).toISOString(),
+
+			expirationTime:
+				new Date(
+					expirationTime
+				).toISOString()
+		};
+	}
+
+
+	// ------------------------------------------------------------
+	// RELEASE
+	// ------------------------------------------------------------
+
+	async release(
+		clientId: string
+	): Promise&lt;{
+		success: boolean;
+		owner: string;
+		ownerName: string;
+		version: number;
+	}&gt; {
+
+		await this.clearExpiredCheckout();
+
+		const currentOwner =
+			await this.ctx.storage.get&lt;string&gt;("owner");
+
+		const currentOwnerName =
+			await this.ctx.storage.get&lt;string&gt;("ownerName");
+
+		const version =
+			await this.ctx.storage.get&lt;number&gt;("version") ?? 0;
+
+
+		// Nobody owns the world.
+		if (currentOwner === undefined) {
+
+			return {
+				success: false,
+				owner: "",
+				ownerName: "",
+				version
+			};
+		}
+
+
+		// Only the current owner can release it.
+		if (currentOwner !== clientId) {
+
+			return {
+				success: false,
+
+				owner:
+					currentOwner,
+
+				ownerName:
+					currentOwnerName ?? "",
+
+				version
+			};
+		}
+
+
+		// The correct owner is releasing it.
+		await this.ctx.storage.delete("owner");
+		await this.ctx.storage.delete("ownerName");
+		await this.ctx.storage.delete("checkoutTime");
+		await this.ctx.storage.delete("expirationTime");
+
+		await this.ctx.storage.deleteAlarm();
+
+
+		return {
+			success: true,
+			owner: "",
+			ownerName: "",
+			version
+		};
+	}
+
+
+	// ------------------------------------------------------------
+	// OWNER CHECK
+	// ------------------------------------------------------------
+
+	async isOwner(
+		clientId: string
+	): Promise&lt;boolean&gt; {
+
+		await this.clearExpiredCheckout();
+
+		const currentOwner =
+			await this.ctx.storage.get&lt;string&gt;("owner");
+
+		return currentOwner === clientId;
+	}
+
+
+	// ------------------------------------------------------------
+	// VERSION
+	// ------------------------------------------------------------
+
+	async incrementVersion(): Promise&lt;number&gt; {
+
+		const currentVersion =
+			await this.ctx.storage.get&lt;number&gt;("version") ?? 0;
+
+		const newVersion =
+			currentVersion + 1;
+
+
+		await this.ctx.storage.put(
+			"version",
+			newVersion
+		);
+
+
+		return newVersion;
+	}
+
+
+	// ------------------------------------------------------------
+	// ALARM
+	// ------------------------------------------------------------
+
+	async alarm(): Promise&lt;void&gt; {
+
+		const expirationTime =
+			await this.ctx.storage.get&lt;number&gt;(
+				"expirationTime"
+			);
+
+
+		// Nothing is currently checked out.
+		if (expirationTime === undefined) {
+			return;
+		}
+
+
+		// The alarm may have fired slightly early.
+		if (Date.now() &lt; expirationTime) {
+
+			await this.ctx.storage.setAlarm(
+				expirationTime
+			);
+
+			return;
+		}
+
+
+		// Expire the checkout.
+		await this.ctx.storage.delete("owner");
+		await this.ctx.storage.delete("ownerName");
+		await this.ctx.storage.delete("checkoutTime");
+		await this.ctx.storage.delete("expirationTime");
+	}
+
+
+	// ------------------------------------------------------------
+	// VERSION METADATA
+	// ------------------------------------------------------------
+
+	async createVersionMetadata(
+		version: number,
+		uploaderId: string,
+		uploaderName: string,
+		restoredFrom?: number
+	): Promise&lt;{
+		version: number;
+		timestamp: string;
+		date: string;
+		uploaderId: string;
+		uploaderName: string;
+		restoredFrom?: number;
+	}&gt; {
+
+		const now =
+			new Date();
+
+
+		const metadata: {
+			version: number;
+			timestamp: string;
+			date: string;
+			uploaderId: string;
+			uploaderName: string;
+			restoredFrom?: number;
+		} = {
+
+			version,
+
+			timestamp:
+				now.toISOString(),
+
+			date:
+				now.toLocaleString("en-US", {
+					timeZone: "UTC",
+					dateStyle: "full",
+					timeStyle: "long"
+				}),
+
+			uploaderId,
+
+			uploaderName
+		};
+
+
+		if (restoredFrom !== undefined) {
+
+			metadata.restoredFrom =
+				restoredFrom;
+		}
+
+
+		return metadata;
+	}
+
+	async getOwnerName(): Promise&lt;string&gt; {
+		const ownerName =
+			await this.ctx.storage.get&lt;string&gt;("ownerName");
+
+		return ownerName ?? "";
+	}
+}
+
+
+// ============================================================
+// WORKER
+// ============================================================
+
+export default {
+
+	async fetch(
+		request: Request,
+		env: Env,
+		ctx: ExecutionContext
+	): Promise&lt;Response&gt; {
+
+		try {
+
+			const url =
+				new URL(request.url);
+
+
+			const world =
+				env.WORLD_STATE.getByName(
+					WORLD_NAME
+				);
+
+
+			// ====================================================
+			// STATUS
+			// ====================================================
+
+			if (
+				url.pathname === "/status" &&
+				request.method === "GET"
+			) {
+
+				const status =
+					await world.getStatus();
+
+				return Response.json(status);
+			}
+
+
+			// ====================================================
+			// CHECKOUT
+			// ====================================================
+
+			if (
+				url.pathname === "/checkout" &&
+				request.method === "POST"
+			) {
+
+				let body: {
+					clientId?: string;
+					clientName?: string;
+				};
+
+
+				try {
+
+					body =
+						await request.json();
+
+				} catch {
+
+					return Response.json(
+						{
+							success: false,
+							error:
+								"Invalid JSON request body"
+						},
+						{ status: 400 }
+					);
+				}
+
+
+				if (!body.clientId) {
+
+					return Response.json(
+						{
+							success: false,
+							error:
+								"Missing clientId"
+						},
+						{ status: 400 }
+					);
+				}
+
+
+				const clientName =
+					body.clientName ?? "";
+
+
+				const result =
+					await world.checkout(
+						body.clientId,
+						clientName
+					);
+
+
+				return Response.json(result);
+			}
+
+
+			// ====================================================
+			// RELEASE
+			// ====================================================
+
+			if (
+				url.pathname === "/release" &&
+				request.method === "POST"
+			) {
+
+				let body: {
+					clientId?: string;
+				};
+
+
+				try {
+
+					body =
+						await request.json();
+
+				} catch {
+
+					return Response.json(
+						{
+							success: false,
+							error:
+								"Invalid JSON request body"
+						},
+						{ status: 400 }
+					);
+				}
+
+
+				if (!body.clientId) {
+
+					return Response.json(
+						{
+							success: false,
+							error:
+								"Missing clientId"
+						},
+						{ status: 400 }
+					);
+				}
+
+
+				const result =
+					await world.release(
+						body.clientId
+					);
+
+
+				return Response.json(result);
+			}
+
+
+
+			// --------------------------------------------------
+			// UPLOAD
+			// --------------------------------------------------
+
+			if (
+				url.pathname === "/upload" &&
+				request.method === "POST"
+			) {
+
+				const clientId =
+					request.headers.get("X-Client-ID");
+
+
+				if (!clientId) {
+
+					return Response.json(
+						{
+							success: false,
+							error: "Missing X-Client-ID header"
+						},
+						{ status: 400 }
+					);
+				}
+
+
+				// Make sure this client currently owns
+				// the world.
+				const ownsWorld =
+					await world.isOwner(clientId);
+
+
+				if (!ownsWorld) {
+
+					const status =
+						await world.getStatus();
+
+					return Response.json(
+						{
+							success: false,
+							error: "Client does not own the world",
+							owner: status.owner,
+							ownerName: status.ownerName
+						},
+						{ status: 403 }
+					);
+				}
+
+
+				// Get the current world status.
+				const status =
+					await world.getStatus();
+
+				const currentVersion =
+					status.version;
+
+
+				// Get the name stored when this client
+				// checked out the world.
+				const uploaderName =
+					await world.getOwnerName();
+
+
+				// Retrieve the current world.
+				const existingWorld =
+					await env.WORLD_BUCKET.get(
+						"ServerTest.db"
+					);
+
+
+				// If a current world exists, preserve it
+				// as a backup before replacing it.
+				if (existingWorld !== null) {
+
+					const backupKey =
+						"backups/ServerTest-v" +
+						currentVersion +
+						".db";
+
+
+					await env.WORLD_BUCKET.put(
+						backupKey,
+						existingWorld.body
+					);
+				}
+
+
+				// Store the new world.
+				await env.WORLD_BUCKET.put(
+					"ServerTest.db",
+					request.body
+				);
+
+
+				// The new world becomes the next version.
+				const newVersion =
+					await world.incrementVersion();
+
+
+				// Create timestamps.
+				const timestamp =
+					new Date();
+
+
+				const isoTimestamp =
+					timestamp.toISOString();
+
+
+				const pacificDate =
+					new Intl.DateTimeFormat(
+						"en-US",
+						{
+							timeZone: "America/Los_Angeles",
+							weekday: "long",
+							year: "numeric",
+							month: "long",
+							day: "numeric",
+							hour: "numeric",
+							minute: "2-digit",
+							second: "2-digit",
+							timeZoneName: "short"
+						}
+					).format(timestamp);
+
+
+				// Create metadata for this version.
+				const metadata = {
+					version: newVersion,
+					timestamp: isoTimestamp,
+					date: pacificDate,
+					uploaderId: clientId,
+					uploaderName: uploaderName
+				};
+
+
+				// Save metadata alongside the backup.
+				const metadataKey =
+					"metadata/ServerTest-v" +
+					newVersion +
+					".json";
+
+
+				await env.WORLD_BUCKET.put(
+					metadataKey,
+					JSON.stringify(
+						metadata,
+						null,
+						4
+					),
+					{
+						httpMetadata: {
+							contentType: "application/json"
+						}
+					}
+				);
+
+
+				return Response.json({
+					success: true,
+					version: newVersion,
+					owner: status.owner,
+					ownerName: uploaderName
+				});
+			}
+
+
+
+
+			// ====================================================
+			// DOWNLOAD
+			// ====================================================
+
+			if (
+				url.pathname === "/download" &&
+				request.method === "GET"
+			) {
+
+				const clientId =
+					request.headers.get(
+						"X-Client-ID"
+					);
+
+
+				if (!clientId) {
+
+					return Response.json(
+						{
+							success: false,
+							error:
+								"Missing X-Client-ID header"
+						},
+						{ status: 400 }
+					);
+				}
+
+
+				const ownsWorld =
+					await world.isOwner(
+						clientId
+					);
+
+
+				if (!ownsWorld) {
+
+					const status =
+						await world.getStatus();
+
+					return Response.json(
+						{
+							success: false,
+							error:
+								"Client does not own the world",
+
+							owner:
+								status.owner,
+
+							ownerName:
+								status.ownerName
+						},
+						{ status: 403 }
+					);
+				}
+
+
+				const object =
+					await env.WORLD_BUCKET.get(
+						WORLD_FILE
+					);
+
+
+				if (object === null) {
+
+					return Response.json(
+						{
+							success: false,
+							error:
+								"World file does not exist"
+						},
+						{ status: 404 }
+					);
+				}
+
+
+				return new Response(
+					object.body,
+					{
+						headers: {
+							"Content-Type":
+								"application/octet-stream",
+
+							"Content-Disposition":
+								`attachment; filename="${WORLD_FILE}"`
+						}
+					}
+				);
+			}
+
+
+			// ====================================================
+			// LIST VERSIONS
+			// ====================================================
+
+			if (
+				url.pathname === "/versions" &&
+				request.method === "GET"
+			) {
+
+				const objects =
+					await env.WORLD_BUCKET.list({
+						prefix:
+							"metadata/" +
+							WORLD_NAME +
+							"-v"
+					});
+
+
+				const versions = [];
+
+
+				for (const object of objects.objects) {
+
+					const metadataObject =
+						await env.WORLD_BUCKET.get(
+							object.key
+						);
+
+
+					if (metadataObject === null) {
+						continue;
+					}
+
+
+					try {
+
+						const text =
+							await metadataObject.text();
+
+						const metadata =
+							JSON.parse(text);
+
+						versions.push(metadata);
+
+					} catch {
+
+						console.log(
+							"Could not parse metadata: " +
+							object.key
+						);
+					}
+				}
+
+
+				versions.sort(
+					(a, b) =>
+						a.version - b.version
+				);
+
+
+				return Response.json({
+					success: true,
+					versions
+				});
+			}
+
+
+			// ====================================================
+			// RESTORE
+			// ====================================================
+
+			if (
+				url.pathname === "/restore" &&
+				request.method === "POST"
+			) {
+
+				const clientId =
+					request.headers.get(
+						"X-Client-ID"
+					);
+
+
+				if (!clientId) {
+
+					return Response.json(
+						{
+							success: false,
+							error:
+								"Missing X-Client-ID header"
+						},
+						{ status: 400 }
+					);
+				}
+
+
+				const ownsWorld =
+					await world.isOwner(
+						clientId
+					);
+
+
+				if (!ownsWorld) {
+
+					const status =
+						await world.getStatus();
+
+					return Response.json(
+						{
+							success: false,
+							error:
+								"Client does not own the world",
+
+							owner:
+								status.owner,
+
+							ownerName:
+								status.ownerName
+						},
+						{ status: 403 }
+					);
+				}
+
+
+				let body: {
+					version?: number;
+				};
+
+
+				try {
+
+					body =
+						await request.json();
+
+				} catch {
+
+					return Response.json(
+						{
+							success: false,
+							error:
+								"Invalid JSON request body"
+						},
+						{ status: 400 }
+					);
+				}
+
+
+				if (
+					body.version === undefined ||
+					!Number.isInteger(body.version) ||
+					body.version &lt; 0
+				) {
+
+					return Response.json(
+						{
+							success: false,
+							error:
+								"Invalid version"
+						},
+						{ status: 400 }
+					);
+				}
+
+
+				const requestedVersion =
+					body.version;
+
+
+				const backupKey =
+					"backups/" +
+					WORLD_NAME +
+					"-v" +
+					requestedVersion +
+					".db";
+
+
+				const backup =
+					await env.WORLD_BUCKET.get(
+						backupKey
+					);
+
+
+				if (backup === null) {
+
+					return Response.json(
+						{
+							success: false,
+							error:
+								"Requested backup does not exist",
+
+							version:
+								requestedVersion
+						},
+						{ status: 404 }
+					);
+				}
+
+
+				const status =
+					await world.getStatus();
+
+
+				const currentVersion =
+					status.version;
+
+
+				// Preserve the current world before restoring.
+				const currentWorld =
+					await env.WORLD_BUCKET.get(
+						WORLD_FILE
+					);
+
+
+				if (currentWorld !== null) {
+
+					const currentBackupKey =
+						"backups/" +
+						WORLD_NAME +
+						"-v" +
+						currentVersion +
+						".db";
+
+
+					await env.WORLD_BUCKET.put(
+						currentBackupKey,
+						currentWorld.body
+					);
+				}
+
+
+				// Restore the selected backup.
+				await env.WORLD_BUCKET.put(
+					WORLD_FILE,
+					backup.body
+				);
+
+
+				// Restoring creates a new version.
+				const newVersion =
+					await world.incrementVersion();
+
+
+				const ownerName =
+					status.ownerName;
+
+
+				const metadata =
+					await world.createVersionMetadata(
+						newVersion,
+						clientId,
+						ownerName,
+						requestedVersion
+					);
+
+
+				const metadataKey =
+					"metadata/" +
+					WORLD_NAME +
+					"-v" +
+					newVersion +
+					".json";
+
+
+				await env.WORLD_BUCKET.put(
+					metadataKey,
+					JSON.stringify(
+						metadata,
+						null,
+						4
+					),
+					{
+						httpMetadata: {
+							contentType:
+								"application/json"
+						}
+					}
+				);
+
+
+				return Response.json({
+					success: true,
+
+					version:
+						newVersion,
+
+					restoredFrom:
+						requestedVersion,
+
+					owner:
+						status.owner,
+
+					ownerName:
+						status.ownerName
+				});
+			}
+
+
+			// ====================================================
+			// NOT FOUND
+			// ====================================================
+
+			return new Response(
+				"Not found",
+				{ status: 404 }
+			);
+
+		} catch (error) {
+
+			console.error(
+				"Unhandled Worker error:",
+				error
+			);
+
+
+			return Response.json(
+				{
+					success: false,
+					error:
+						"Internal server error"
+				},
+				{ status: 500 }
+			);
+		}
+	}
+};
+</script>
+
+<script>
+  const FILES = {
+    'src/main.cpp':          { lang: 'cpp',        scriptId: 'src-main-cpp' },
+    'src/client.h':           { lang: 'cpp',        scriptId: 'src-client-h' },
+    'src/client.cpp':         { lang: 'cpp',        scriptId: 'src-client-cpp' },
+    'src/cloud.h':            { lang: 'cpp',        scriptId: 'src-cloud-h' },
+    'src/cloud.cpp':          { lang: 'cpp',        scriptId: 'src-cloud-cpp' },
+    'src/folder.h':           { lang: 'cpp',        scriptId: 'src-folder-h' },
+    'src/folder.cpp':         { lang: 'cpp',        scriptId: 'src-folder-cpp' },
+    'src/user.h':              { lang: 'cpp',        scriptId: 'src-user-h' },
+    'src/user.cpp':            { lang: 'cpp',        scriptId: 'src-user-cpp' },
+    'cloud/wrangler.jsonc':   { lang: 'json',       scriptId: 'cloud-wrangler-jsonc' },
+    'cloud/package.json':     { lang: 'json',       scriptId: 'cloud-package-json' },
+    'cloud/src/index.ts':     { lang: 'typescript', scriptId: 'cloud-src-index-ts' },
+  };
+
+  const codeEl = document.getElementById('codeEl');
+  const lineNumbersEl = document.getElementById('lineNumbers');
+  const breadcrumbEl = document.getElementById('breadcrumbPath');
+  const treeButtons = document.querySelectorAll('.tree-file');
+
+  function decodeEntities(str){
+    const ta = document.createElement('textarea');
+    ta.innerHTML = str;
+    return ta.value;
+  }
+
+  function showFile(path){
+    const meta = FILES[path];
+    if (!meta) return;
+
+    const raw = decodeEntities(document.getElementById(meta.scriptId).textContent).replace(/^\n/, '').replace(/\n$/, '');
+
+    codeEl.className = 'language-' + meta.lang;
+    codeEl.textContent = raw;
+    hljs.highlightElement(codeEl);
+
+    const lineCount = raw.split('\n').length;
+    lineNumbersEl.textContent = Array.from({ length: lineCount }, (_, i) => i + 1).join('\n');
+
+    breadcrumbEl.textContent = path;
+
+    treeButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.file === path));
+  }
+
+  treeButtons.forEach(btn => {
+    btn.addEventListener('click', () => showFile(btn.dataset.file));
+  });
+
+  showFile('src/main.cpp');
+</script>
+
+</body>
+</html>
