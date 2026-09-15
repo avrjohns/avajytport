@@ -3,169 +3,227 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Scrap Mechanic World Manager — Code</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css" />
+<title>ScrapMechanicWorldManager1 - Visual Studio Code</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  :root{
-    --bg:        #0d1117;
-    --bg-elev:   #161b22;
-    --border:    #30363d;
-    --text:      #e6edf3;
-    --text-dim:  #8b949e;
-    --link:      #58a6ff;
-    --amber:     #d29922;
-    --amber-bg:  rgba(210,153,34,0.1);
-  }
-
-  html, body { height: 100%; }
+  html, body { height: 100%; overflow: hidden; }
   body{
-    background: var(--bg); color: var(--text);
-    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    font-size: 14px; line-height: 1.5;
+    background: #1e1e1e; color: #cccccc;
+    font-family: "Segoe UI", -apple-system, Helvetica, Arial, sans-serif;
+    font-size: 13px;
   }
-  a { color: var(--link); text-decoration: none; }
-  a:hover { text-decoration: underline; }
   button { font-family: inherit; border: none; background: none; color: inherit; cursor: pointer; }
+  svg { display: block; flex-shrink: 0; }
 
-  header{
-    padding: 20px 24px; border-bottom: 1px solid var(--border);
-  }
-  .back-link{ font-size: 13px; color: var(--text-dim); display:inline-flex; align-items:center; gap:6px; margin-bottom: 14px; }
-  .back-link:hover{ color: var(--text); text-decoration:none; }
-  .title-row{ display:flex; align-items:center; gap: 12px; flex-wrap: wrap; }
-  h1{ font-size: 22px; font-weight: 600; }
-  .private-pill{
-    display:inline-flex; align-items:center; gap:6px;
-    font-size: 11.5px; font-weight: 600; color: var(--amber);
-    background: var(--amber-bg); border: 1px solid rgba(210,153,34,0.4);
-    padding: 3px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.04em;
-  }
-  .subtitle{ color: var(--text-dim); font-size: 13.5px; margin-top: 6px; }
-  .stack-chips{ display:flex; gap:8px; margin-top: 12px; flex-wrap: wrap; }
-  .stack-chip{
-    font-size: 12px; color: var(--text-dim); background: var(--bg-elev);
-    border: 1px solid var(--border); padding: 3px 10px; border-radius: 6px;
-  }
+  .vscode{ display:flex; flex-direction:column; height: 100vh; }
 
-  .notice{
-    margin: 18px 24px 0; padding: 12px 16px; background: var(--amber-bg);
-    border: 1px solid rgba(210,153,34,0.35); border-radius: 8px;
-    font-size: 13px; color: var(--text); line-height: 1.6;
+  /* ---------- Title bar ---------- */
+  .titlebar{
+    height: 30px; flex-shrink: 0; background: #3c3c3c;
+    display:flex; align-items:center; padding: 0 8px; gap: 14px;
+    -webkit-user-select: none; user-select: none;
   }
-  .notice strong{ color: var(--amber); }
-  .notice ul{ margin: 8px 0 0 18px; color: var(--text-dim); }
+  .titlebar-home{
+    width: 20px; height: 20px; border-radius: 4px; display:flex; align-items:center; justify-content:center;
+    color: #cccccc; flex-shrink: 0;
+  }
+  .titlebar-home:hover{ background: rgba(255,255,255,0.1); }
+  .titlebar-home img{ width: 18px; height: 18px; border-radius: 50%; object-fit: cover; display:block; }
+  .menu{ display:flex; gap: 2px; }
+  .menu span{ padding: 4px 8px; border-radius: 4px; font-size: 12.5px; color: #cccccc; }
+  .menu span:hover{ background: rgba(255,255,255,0.1); }
+  .titlebar-title{
+    position: absolute; left: 50%; transform: translateX(-50%);
+    font-size: 12px; color: #cccccc; opacity: 0.85;
+  }
+  .win-controls{ margin-left:auto; display:flex; gap: 2px; }
+  .win-controls span{
+    width: 32px; height: 30px; display:flex; align-items:center; justify-content:center; color:#cccccc;
+  }
+  .win-controls span:hover{ background: rgba(255,255,255,0.1); }
+  .win-controls span.close:hover{ background: #e81123; }
 
-  main{ display:flex; border-top: 1px solid var(--border); margin-top: 18px; min-height: 60vh; }
+  /* ---------- Body ---------- */
+  .vsbody{ flex: 1; display:flex; min-height: 0; }
 
-  .sidebar{ width: 260px; flex-shrink: 0; border-right: 1px solid var(--border); padding: 14px 0; }
-  .tree-folder-label{
-    padding: 10px 16px 6px; font-size: 11.5px; color: var(--text-dim);
-    text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600;
+
+  .sidebar{ width: 240px; flex-shrink: 0; background: #252526; display:flex; flex-direction:column; overflow: hidden; }
+  .sidebar-header{
+    padding: 10px 20px 6px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: #bbbbbb;
+  }
+  .explorer-root{
+    display:flex; align-items:center; gap: 4px; padding: 3px 8px 3px 6px;
+    font-size: 12.5px; font-weight: 700; letter-spacing: 0.03em; color: #cccccc; cursor: default;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .tree{ flex: 1; overflow-y: auto; padding-bottom: 12px; }
+  .tree-folder{
+    display:flex; align-items:center; gap: 5px; padding: 3px 8px 3px 22px;
+    font-size: 13px; color: #cccccc; cursor: default;
   }
   .tree-file{
-    display:block; width: 100%; text-align: left; padding: 6px 16px 6px 32px;
-    font-size: 13px; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    color: var(--text); border-radius: 6px;
+    display:flex; align-items:center; gap: 7px; width: 100%; text-align: left;
+    padding: 3px 8px 3px 38px; font-size: 13px; color: #cccccc;
   }
-  .tree-file.nested{ padding-left: 44px; }
-  .tree-file:hover{ background: var(--bg-elev); }
-  .tree-file.active{ background: rgba(88,166,255,0.15); color: var(--link); }
+  .tree-file.nested{ padding-left: 58px; }
+  .tree-file:hover{ background: #2a2d2e; }
+  .tree-file.active{ background: #37373d; }
+  .folder-icon{ color: #c09553; flex-shrink:0; }
+  .chevron{ color: #cccccc; flex-shrink:0; opacity: 0.8; }
 
-  .code-area{ flex: 1; min-width: 0; display:flex; flex-direction: column; }
-  .breadcrumb{
-    padding: 10px 20px; border-bottom: 1px solid var(--border);
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 13px; color: var(--text-dim);
+  /* ---------- Editor ---------- */
+  .editor-area{ flex: 1; min-width: 0; display:flex; flex-direction: column; background: #1e1e1e; }
+
+  .tabbar{ display:flex; background: #252526; overflow-x: auto; flex-shrink: 0; }
+  .tab{
+    display:flex; align-items:center; gap: 7px; padding: 0 8px 0 12px; height: 35px;
+    font-size: 13px; color: #969696; background: #2d2d2d; white-space: nowrap;
+    border-right: 1px solid #252526; flex-shrink: 0;
   }
-  .breadcrumb span{ color: var(--text); }
+  .tab.active{ background: #1e1e1e; color: #ffffff; }
+  .tab-close{
+    width: 20px; height: 20px; border-radius: 4px; display:flex; align-items:center; justify-content:center;
+    color: #969696; opacity: 0; flex-shrink: 0;
+  }
+  .tab:hover .tab-close, .tab.active .tab-close{ opacity: 1; }
+  .tab-close:hover{ background: rgba(255,255,255,0.15); color: #fff; }
 
-  .code-scroll{ flex: 1; overflow: auto; }
-  .code-wrap{ display:flex; min-width: max-content; }
+  .editor-scroll{ flex: 1; overflow: auto; position: relative; }
+  .editor-empty{
+    display:flex; align-items:center; justify-content:center; height:100%;
+    color: #5a5a5a; font-size: 13px;
+  }
+  .editor-wrap{ display:flex; min-width: max-content; }
   .line-numbers{
-    text-align: right; padding: 16px 12px 16px 16px; color: #484f58;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 12.5px; line-height: 1.6; white-space: pre; user-select: none;
-    border-right: 1px solid var(--border);
+    text-align: right; padding: 4px 13px 4px 16px; color: #858585;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 14px; line-height: 19px; white-space: pre; user-select: none; flex-shrink: 0;
   }
-  pre.code-pre{ margin: 0; padding: 16px 20px; flex: 1; }
+  pre.code-pre{ margin: 0; padding: 4px 26px 4px 0; flex: 1; }
   pre.code-pre code.hljs{
-    background: transparent !important; padding: 0 !important;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 12.5px; line-height: 1.6; white-space: pre;
+    background: transparent !important; padding: 0 !important; color: #d4d4d4;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 14px; line-height: 19px; white-space: pre;
   }
 
-  footer{ padding: 16px 24px; color: var(--text-dim); font-size: 12px; border-top: 1px solid var(--border); }
+  /* VS Code Dark+ token colors */
+  .hljs-comment, .hljs-quote{ color: #6a9955; }
+  .hljs-keyword, .hljs-selector-tag, .hljs-literal, .hljs-subst{ color: #569cd6; }
+  .hljs-doctag, .hljs-string, .hljs-regexp, .hljs-addition, .hljs-attribute, .hljs-meta-string{ color: #ce9178; }
+  .hljs-number, .hljs-symbol, .hljs-bullet, .hljs-link{ color: #b5cea8; }
+  .hljs-title, .hljs-title.function_, .hljs-section{ color: #dcdcaa; }
+  .hljs-type, .hljs-class .hljs-title, .hljs-title.class_{ color: #4ec9b0; }
+  .hljs-variable, .hljs-template-variable, .hljs-attr, .hljs-property, .hljs-params{ color: #9cdcfe; }
+  .hljs-meta{ color: #9b9b9b; }
+  .hljs-built_in, .hljs-builtin-name{ color: #4ec9b0; }
+  .hljs-deletion{ color: #ce9178; }
+  .hljs-emphasis{ font-style: italic; }
+  .hljs-strong{ font-weight: bold; }
+
+  /* ---------- Status bar ---------- */
+  .statusbar{
+    height: 22px; flex-shrink: 0; background: #007acc; color: #ffffff;
+    display:flex; align-items:center; justify-content: space-between; padding: 0 10px;
+    font-size: 12px;
+  }
+  .status-left, .status-right{ display:flex; align-items:center; gap: 14px; height: 100%; }
+  .status-item{ display:flex; align-items:center; gap: 5px; height: 100%; padding: 0 2px; }
 
   @media (max-width: 720px){
-    main{ flex-direction: column; }
-    .sidebar{ width: 100%; border-right:none; border-bottom:1px solid var(--border); }
+    .sidebar{ width: 180px; }
+    .menu span:nth-child(n+5){ display:none; }
+  }
+  @media (max-width: 620px){
+    .titlebar-title{ display:none; }
+  }
+  @media (max-width: 460px){
+    .menu{ display:none; }
   }
 </style>
 </head>
 <body>
 
-<header>
-  <a class="back-link" href="../../index.html">&larr; Back to portfolio</a>
-  <div class="title-row">
-    <h1>Scrap Mechanic World Manager</h1>
-    <span class="private-pill">Private repository</span>
+<div class="vscode">
+  <div class="titlebar">
+    <a class="titlebar-home" href="../../index.html" title="Back to portfolio"><img src="../../assets/avatar-head.jpg" alt="" /></a>
+    <div class="menu">
+      <span>File</span><span>Edit</span><span>Selection</span><span>View</span>
+      <span>Go</span><span>Run</span><span>Terminal</span><span>Help</span>
+    </div>
+    <div class="titlebar-title">ScrapMechanicWorldManager1 - Visual Studio Code</div>
+    <div class="win-controls">
+      <span title="Minimize"><svg width="10" height="10" viewBox="0 0 10 10"><rect y="5" width="10" height="1" fill="currentColor"/></svg></span>
+      <span title="Maximize"><svg width="10" height="10" viewBox="0 0 10 10"><rect x="0.5" y="0.5" width="9" height="9" fill="none" stroke="currentColor"/></svg></span>
+      <span class="close" title="Close"><svg width="10" height="10" viewBox="0 0 10 10"><path d="M0 0l10 10M10 0L0 10" stroke="currentColor"/></svg></span>
+    </div>
   </div>
-  <div class="subtitle">Built with my cousin Clayton Heath &middot; MAAC2 / ScrapMechanicWorldManager1</div>
-  <div class="stack-chips">
-    <span class="stack-chip">C++</span>
-    <span class="stack-chip">libcurl</span>
-    <span class="stack-chip">nlohmann/json</span>
-    <span class="stack-chip">Cloudflare Workers</span>
-    <span class="stack-chip">TypeScript</span>
-    <span class="stack-chip">Durable Objects</span>
-    <span class="stack-chip">R2</span>
-  </div>
-</header>
 
-<div class="notice">
-  <strong>Why this page instead of a GitHub link:</strong> the actual repo is kept private, so this is a
-  browsable, read-only mirror of the core source instead of a dead link.
-  <ul>
-    <li>The Cloudflare Worker URL in <code>cloud.cpp</code> is redacted below &mdash; the real deployment has no
-      authentication in front of it, so publishing the live address isn't a good idea.</li>
-    <li>Compiled binaries, local SQLite save-game files (real Scrap Mechanic world data), and git history are
-      left out entirely.</li>
-  </ul>
-</div>
+  <div class="vsbody">
+    <nav class="sidebar">
+      <div class="sidebar-header">Explorer</div>
+      <div class="explorer-root">
+        <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M8 6l8 6-8 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" transform="rotate(90 12 12)"/></svg>
+        SCRAPMECHANICWORLDMANAGER1
+      </div>
+      <div class="tree" id="fileTree">
+        <div class="tree-folder">
+          <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M8 6l8 6-8 6" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" transform="rotate(90 12 12)"/></svg>
+          <svg class="folder-icon" width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6a1 1 0 011-1h5l2 2h9a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V6z"/></svg>
+          src
+        </div>
+        <button class="tree-file" data-file="src/main.cpp">main.cpp</button>
+        <button class="tree-file" data-file="src/client.h">client.h</button>
+        <button class="tree-file" data-file="src/client.cpp">client.cpp</button>
+        <button class="tree-file" data-file="src/cloud.h">cloud.h</button>
+        <button class="tree-file" data-file="src/cloud.cpp">cloud.cpp</button>
+        <button class="tree-file" data-file="src/folder.h">folder.h</button>
+        <button class="tree-file" data-file="src/folder.cpp">folder.cpp</button>
+        <button class="tree-file" data-file="src/user.h">user.h</button>
+        <button class="tree-file" data-file="src/user.cpp">user.cpp</button>
+        <div class="tree-folder">
+          <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M8 6l8 6-8 6" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" transform="rotate(90 12 12)"/></svg>
+          <svg class="folder-icon" width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6a1 1 0 011-1h5l2 2h9a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V6z"/></svg>
+          cloud
+        </div>
+        <button class="tree-file" data-file="cloud/wrangler.jsonc">wrangler.jsonc</button>
+        <button class="tree-file" data-file="cloud/package.json">package.json</button>
+        <div class="tree-folder" style="padding-left:38px;">
+          <svg class="chevron" width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M8 6l8 6-8 6" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" transform="rotate(90 12 12)"/></svg>
+          <svg class="folder-icon" width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M3 6a1 1 0 011-1h5l2 2h9a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V6z"/></svg>
+          src
+        </div>
+        <button class="tree-file nested" data-file="cloud/src/index.ts">index.ts</button>
+      </div>
+    </nav>
 
-<main>
-  <nav class="sidebar" id="fileTree">
-    <div class="tree-folder-label">src/</div>
-    <button class="tree-file" data-file="src/main.cpp">main.cpp</button>
-    <button class="tree-file" data-file="src/client.h">client.h</button>
-    <button class="tree-file" data-file="src/client.cpp">client.cpp</button>
-    <button class="tree-file" data-file="src/cloud.h">cloud.h</button>
-    <button class="tree-file" data-file="src/cloud.cpp">cloud.cpp</button>
-    <button class="tree-file" data-file="src/folder.h">folder.h</button>
-    <button class="tree-file" data-file="src/folder.cpp">folder.cpp</button>
-    <button class="tree-file" data-file="src/user.h">user.h</button>
-    <button class="tree-file" data-file="src/user.cpp">user.cpp</button>
-    <div class="tree-folder-label">cloud/</div>
-    <button class="tree-file" data-file="cloud/wrangler.jsonc">wrangler.jsonc</button>
-    <button class="tree-file" data-file="cloud/package.json">package.json</button>
-    <div class="tree-folder-label" style="padding-left:28px;">src/</div>
-    <button class="tree-file nested" data-file="cloud/src/index.ts">index.ts</button>
-  </nav>
-
-  <div class="code-area">
-    <div class="breadcrumb">ScrapMechanicWorldManager1 / <span id="breadcrumbPath">src/main.cpp</span></div>
-    <div class="code-scroll">
-      <div class="code-wrap">
-        <div class="line-numbers" id="lineNumbers"></div>
-        <pre class="code-pre"><code id="codeEl" class="language-cpp"></code></pre>
+    <div class="editor-area">
+      <div class="tabbar" id="tabBar"></div>
+      <div class="editor-scroll" id="editorScroll">
+        <div class="editor-wrap">
+          <div class="line-numbers" id="lineNumbers"></div>
+          <pre class="code-pre"><code id="codeEl" class="language-cpp"></code></pre>
+        </div>
       </div>
     </div>
   </div>
-</main>
 
-<footer>Read-only mirror &middot; not connected to the live deployment</footer>
+  <div class="statusbar">
+    <div class="status-left">
+      <span class="status-item">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"><circle cx="6" cy="6" r="2.2" stroke="currentColor" stroke-width="1.8"/><circle cx="6" cy="18" r="2.2" stroke="currentColor" stroke-width="1.8"/><circle cx="18" cy="12" r="2.2" stroke="currentColor" stroke-width="1.8"/><path d="M6 8.2V15.8M8.2 12H15.8" stroke="currentColor" stroke-width="1.8"/></svg>
+        main
+      </span>
+    </div>
+    <div class="status-right">
+      <span class="status-item" id="statusPos">Ln 1, Col 1</span>
+      <span class="status-item">Spaces: 4</span>
+      <span class="status-item">UTF-8</span>
+      <span class="status-item">LF</span>
+      <span class="status-item" id="statusLang">C++</span>
+    </div>
+  </div>
+</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/cpp.min.js"></script>
@@ -3171,24 +3229,30 @@ export default {
 
 <script>
   const FILES = {
-    'src/main.cpp':          { lang: 'cpp',        scriptId: 'src-main-cpp' },
-    'src/client.h':           { lang: 'cpp',        scriptId: 'src-client-h' },
-    'src/client.cpp':         { lang: 'cpp',        scriptId: 'src-client-cpp' },
-    'src/cloud.h':            { lang: 'cpp',        scriptId: 'src-cloud-h' },
-    'src/cloud.cpp':          { lang: 'cpp',        scriptId: 'src-cloud-cpp' },
-    'src/folder.h':           { lang: 'cpp',        scriptId: 'src-folder-h' },
-    'src/folder.cpp':         { lang: 'cpp',        scriptId: 'src-folder-cpp' },
-    'src/user.h':              { lang: 'cpp',        scriptId: 'src-user-h' },
-    'src/user.cpp':            { lang: 'cpp',        scriptId: 'src-user-cpp' },
-    'cloud/wrangler.jsonc':   { lang: 'json',       scriptId: 'cloud-wrangler-jsonc' },
-    'cloud/package.json':     { lang: 'json',       scriptId: 'cloud-package-json' },
-    'cloud/src/index.ts':     { lang: 'typescript', scriptId: 'cloud-src-index-ts' },
+    'src/main.cpp':          { lang: 'cpp',        langLabel: 'C++',        scriptId: 'src-main-cpp' },
+    'src/client.h':          { lang: 'cpp',        langLabel: 'C++',        scriptId: 'src-client-h' },
+    'src/client.cpp':        { lang: 'cpp',        langLabel: 'C++',        scriptId: 'src-client-cpp' },
+    'src/cloud.h':           { lang: 'cpp',        langLabel: 'C++',        scriptId: 'src-cloud-h' },
+    'src/cloud.cpp':         { lang: 'cpp',        langLabel: 'C++',        scriptId: 'src-cloud-cpp' },
+    'src/folder.h':          { lang: 'cpp',        langLabel: 'C++',        scriptId: 'src-folder-h' },
+    'src/folder.cpp':        { lang: 'cpp',        langLabel: 'C++',        scriptId: 'src-folder-cpp' },
+    'src/user.h':            { lang: 'cpp',        langLabel: 'C++',        scriptId: 'src-user-h' },
+    'src/user.cpp':          { lang: 'cpp',        langLabel: 'C++',        scriptId: 'src-user-cpp' },
+    'cloud/wrangler.jsonc':  { lang: 'json',       langLabel: 'JSON',       scriptId: 'cloud-wrangler-jsonc' },
+    'cloud/package.json':    { lang: 'json',       langLabel: 'JSON',       scriptId: 'cloud-package-json' },
+    'cloud/src/index.ts':    { lang: 'typescript', langLabel: 'TypeScript', scriptId: 'cloud-src-index-ts' },
   };
 
   const codeEl = document.getElementById('codeEl');
   const lineNumbersEl = document.getElementById('lineNumbers');
-  const breadcrumbEl = document.getElementById('breadcrumbPath');
+  const editorScroll = document.getElementById('editorScroll');
+  const tabBar = document.getElementById('tabBar');
+  const statusLang = document.getElementById('statusLang');
+  const statusPos = document.getElementById('statusPos');
   const treeButtons = document.querySelectorAll('.tree-file');
+
+  let openTabs = [];
+  let activeTab = null;
 
   function decodeEntities(str){
     const ta = document.createElement('textarea');
@@ -3196,29 +3260,92 @@ export default {
     return ta.value;
   }
 
-  function showFile(path){
-    const meta = FILES[path];
-    if (!meta) return;
+  function fileName(path){
+    return path.split('/').pop();
+  }
 
+  function render(){
+    tabBar.innerHTML = openTabs.map(path => {
+      const meta = FILES[path];
+      const active = path === activeTab;
+      return `
+        <div class="tab${active ? ' active' : ''}" data-file="${path}">
+          
+          <span>${fileName(path)}</span>
+          <span class="tab-close" data-close="${path}">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M5 5l14 14M19 5L5 19" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          </span>
+        </div>`;
+    }).join('');
+
+    treeButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.file === activeTab));
+
+    if (!activeTab){
+      editorScroll.innerHTML = '<div class="editor-empty">No editor open</div>';
+      statusLang.textContent = '';
+      statusPos.textContent = '';
+      return;
+    }
+
+    if (!document.getElementById('lineNumbers')){
+      editorScroll.innerHTML = `
+        <div class="editor-wrap">
+          <div class="line-numbers" id="lineNumbers"></div>
+          <pre class="code-pre"><code id="codeEl" class="language-cpp"></code></pre>
+        </div>`;
+    }
+
+    const meta = FILES[activeTab];
     const raw = decodeEntities(document.getElementById(meta.scriptId).textContent).replace(/^\n/, '').replace(/\n$/, '');
 
-    codeEl.className = 'language-' + meta.lang;
-    codeEl.textContent = raw;
-    hljs.highlightElement(codeEl);
+    const code = document.getElementById('codeEl');
+    code.className = 'language-' + meta.lang;
+    code.textContent = raw;
+    hljs.highlightElement(code);
 
     const lineCount = raw.split('\n').length;
-    lineNumbersEl.textContent = Array.from({ length: lineCount }, (_, i) => i + 1).join('\n');
+    document.getElementById('lineNumbers').textContent = Array.from({ length: lineCount }, (_, i) => i + 1).join('\n');
 
-    breadcrumbEl.textContent = path;
+    statusLang.textContent = meta.langLabel;
+    statusPos.textContent = 'Ln 1, Col 1';
+  }
 
-    treeButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.file === path));
+  function openFile(path){
+    if (!FILES[path]) return;
+    if (!openTabs.includes(path)) openTabs.push(path);
+    activeTab = path;
+    render();
+  }
+
+  function closeTab(path){
+    const idx = openTabs.indexOf(path);
+    if (idx === -1) return;
+    openTabs.splice(idx, 1);
+    if (activeTab === path){
+      activeTab = openTabs[idx] || openTabs[idx - 1] || null;
+    }
+    render();
   }
 
   treeButtons.forEach(btn => {
-    btn.addEventListener('click', () => showFile(btn.dataset.file));
+    btn.addEventListener('click', () => openFile(btn.dataset.file));
   });
 
-  showFile('src/main.cpp');
+  tabBar.addEventListener('click', e => {
+    const closeBtn = e.target.closest('.tab-close');
+    if (closeBtn){
+      e.stopPropagation();
+      closeTab(closeBtn.dataset.close);
+      return;
+    }
+    const tab = e.target.closest('.tab');
+    if (tab){
+      activeTab = tab.dataset.file;
+      render();
+    }
+  });
+
+  openFile('src/main.cpp');
 </script>
 
 </body>
