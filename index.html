@@ -277,17 +277,13 @@
   .repo-thumb .project-thumb-inner{ background: #0d1117; color: #3ea6ff; }
   .site-thumb .project-thumb-inner{ background: #1a2233; color: #7c9cbf; }
   .win-dots{ position:absolute; top: 12px; left: 14px; display:flex; gap: 6px; z-index: 1; }
-  .repo-thumb .ext-badge{
-    left: auto; right: 8px;
-    background: #21262d; border: 1px solid #30363d;
-  }
   .win-dots span{ width: 9px; height: 9px; border-radius: 50%; }
   .win-dots span:nth-child(1){ background:#ff5f56; }
   .win-dots span:nth-child(2){ background:#ffbd2e; }
   .win-dots span:nth-child(3){ background:#27c93f; }
   .repo-path{
-    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 12px; color: #8b949e; padding: 0 16px; text-align:center;
+    font-family: 'Roboto', Arial, sans-serif; font-weight: 500;
+    font-size: 12.5px; color: #8b949e; padding: 0 16px; text-align:center;
     max-width: 240px; overflow:hidden; text-overflow: ellipsis; white-space: nowrap;
   }
   .project-body{ padding: 14px 16px 16px; }
@@ -392,10 +388,6 @@
     <button class="icon-btn" id="notifyBtn" aria-label="Contact Ava" title="Contact">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 3a5 5 0 00-5 5v3.2c0 .7-.28 1.37-.78 1.87L5 14.5c-.6.6-.17 1.5.67 1.5h12.66c.84 0 1.27-.9.67-1.5l-1.22-1.43a2.65 2.65 0 01-.78-1.87V8a5 5 0 00-5-5z" stroke="currentColor" stroke-width="1.7"/><path d="M9.5 18a2.5 2.5 0 005 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
     </button>
-    <a class="pill-btn" href="Ava_Johnson_Resume.pdf">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      <span class="pill-text">Resume</span>
-    </a>
     <button class="avatar-btn" id="avatarBtn" title="About Ava"><img src="assets/avatar-head.jpg" alt="Ava Johnson" /></button>
   </div>
 </header>
@@ -437,14 +429,10 @@
         <div class="channel-info">
           <h1>Ava Johnson</h1>
           <div class="channel-sub">@avajohnson &nbsp;·&nbsp; UC Santa Cruz</div>
-          <div class="channel-stats">10 projects &nbsp;·&nbsp; 1M+ views on a single upload</div>
+          <div class="channel-stats">10 projects &nbsp;·&nbsp; 1M+ views</div>
           <p class="channel-bio">Computer Science: Game Design student with 8+ years in video production. I pitch, film, and edit short-form content for UC Santa Cruz Admissions, plus event coverage on the side.</p>
           <div class="channel-actions">
             <a class="btn-solid" href="#contact">Contact Me</a>
-            <a class="btn-outline" href="Ava_Johnson_Resume.pdf">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              Resume
-            </a>
             <a class="btn-icon" href="https://www.linkedin.com/in/avarielle" target="_blank" rel="noopener" title="LinkedIn">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none"><path d="M6.94 8.5H4V20h2.94V8.5zM5.47 4a1.7 1.7 0 100 3.4 1.7 1.7 0 000-3.4zM20 13.32V20h-2.94v-6.27c0-1.5-.54-2.52-1.87-2.52-1.02 0-1.63.69-1.9 1.35-.1.24-.12.57-.12.9V20H10.2s.04-10.6 0-11.5h2.94v1.63c.39-.6 1.09-1.46 2.65-1.46 1.93 0 3.38 1.26 3.38 3.97-.01.17-.02.34.83.68z" fill="currentColor"/></svg>
             </a>
@@ -571,8 +559,6 @@
     </section>
 
     <section id="contact" class="contact-section">
-      <h2>Let's work together</h2>
-      <p>Open to opportunities in video production, software engineering, game design, and film.</p>
       <div class="contact-links">
         <a class="btn-solid" href="mailto:avariellerose@gmail.com">avariellerose@gmail.com</a>
         <a class="btn-outline" href="https://www.linkedin.com/in/avarielle" target="_blank" rel="noopener">LinkedIn</a>
@@ -638,7 +624,6 @@
       langs:['C++','TypeScript'],
       url:'projects/scrap-mechanic/index.html',
       note:'private',
-      ctaLabel:'Browse the Code',
     },
     {
       id:'cavacount', type:'site', title:'Cava Count',
@@ -652,7 +637,6 @@
     if (p.type === 'site'){
       return `
         <div class="project-thumb site-thumb">
-          <div class="ext-badge">Live Site</div>
           <div class="project-thumb-inner">
             <svg width="30" height="30" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M3 12h18M12 3c2.4 2.6 3.6 5.6 3.6 9s-1.2 6.4-3.6 9c-2.4-2.6-3.6-5.6-3.6-9s1.2-6.4 3.6-9z" stroke="currentColor" stroke-width="1.8"/></svg>
             <div class="repo-path">avrjohns.github.io/cavacount</div>
@@ -661,7 +645,6 @@
     }
     return `
       <div class="project-thumb repo-thumb">
-        <div class="ext-badge">${p.note === 'private' ? 'Private Repo' : 'GitHub'}</div>
         <div class="project-thumb-inner">
           <div class="win-dots"><span></span><span></span><span></span></div>
           <svg width="34" height="34" viewBox="0 0 24 24" fill="none"><path d="M9 8l-4 4 4 4M15 8l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -672,7 +655,7 @@
 
   function buildProjectCard(p){
     const langs = (p.langs || []).map(l => `<span class="lang-chip"><span class="lang-dot" style="background:${LANG_COLORS[l] || '#8b949e'}"></span>${l}</span>`).join('');
-    const ctaLabel = p.ctaLabel || (p.type === 'site' ? 'Visit Site' : 'View on GitHub');
+    const ctaLabel = 'View';
     return `
       <a class="project-card" href="${p.url}" target="_blank" rel="noopener">
         ${buildProjectThumb(p)}
