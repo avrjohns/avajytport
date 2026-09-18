@@ -595,6 +595,8 @@
     { id:'weekly',      title:'High School Weekly Recap',           platform:'youtube', youtubeId:'kEevGOUPAxw', channel:'Event Coverage', category:'event', role:'Filmed · Edited' },
     { id:'mchenry',     title:'McHenry Library Tour',               platform:'instagram', url:'https://www.instagram.com/reel/DVRVsxyj34n/', channel:'UCSC Admissions', category:'social', role:'Pitched · Filmed · Edited' },
     { id:'techtrek',    title:'Tech Trek 2025 — STEM Camp Recap',   platform:'youtube', youtubeId:'wb_Du1KlUB0', channel:'Tech Trek AAUW', category:'event', role:'Filmed · Edited' },
+    { id:'futureslugs', title:'Dear Future Slugs',                  platform:'instagram', url:'https://www.instagram.com/reel/DWPvC6OP39F/', channel:'UCSC Admissions', category:'social', role:'Edited' },
+    { id:'harvestmoon', title:'FPC Harvest Moon',                   platform:'youtube', youtubeId:'qqod-306n2Y', channel:'Event Coverage', category:'event', role:'Camera Operator' },
   ];
 
   const LANG_COLORS = { JavaScript:'#f1e05a', HTML:'#e34c26', CSS:'#563d7c', 'C++':'#f34b7d', TypeScript:'#3178c6' };
@@ -729,9 +731,9 @@
   document.getElementById('shelfPopular').innerHTML =
     byId(['katseye','ratethatsong','kitty']).map(buildCard).join('');
   document.getElementById('shelfUcsc').innerHTML =
-    byId(['campout','sailing','cribs','outfits','mchenry']).map(buildCard).join('');
+    byId(['campout','sailing','cribs','outfits','mchenry','futureslugs']).map(buildCard).join('');
   document.getElementById('shelfEvent').innerHTML =
-    byId(['homecoming','weekly','techtrek']).map(buildCard).join('');
+    byId(['homecoming','weekly','techtrek','harvestmoon']).map(buildCard).join('');
   document.getElementById('videoGrid').innerHTML = VIDEOS.map(buildCard).join('');
 
   /* ---- card click -> modal (youtube) or new tab (instagram) ---- */
